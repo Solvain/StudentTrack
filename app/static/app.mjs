@@ -2,9 +2,9 @@ import { ApiError, formatScore, request } from './api.mjs';
 
 const byId = (id) => document.getElementById(id);
 const selectionKey = 'studenttrack.semester';
-const modeLabels = { subject_means: 'Среднее по предметам', all_grades: 'Среднее по всем оценкам' };
-const scales = [5, 12, 100].map((value) => [value, `${value} баллов`]);
-const numberWords = new Intl.PluralRules('ru-RU');
+const modeLabels = { subject_means: 'Середній бал за предметами', all_grades: 'Середній бал за всіма оцінками' };
+const scales = [5, 12, 100].map((value) => [value, `${value} балів`]);
+const numberWords = new Intl.PluralRules('uk-UA');
 const state = {
   ready: false,
   loading: false,
@@ -49,16 +49,16 @@ function setNotice(node, message) {
 }
 
 function countGrades(count) {
-  const noun = { one: 'оценка', few: 'оценки', many: 'оценок', other: 'оценки' };
+  const noun = { one: 'оцінка', few: 'оцінки', many: 'оцінок', other: 'оцінки' };
   return `${count} ${noun[numberWords.select(count)]}`;
 }
 
 function apiMessage(error, { invalid, conflict } = {}) {
-  if (!(error instanceof ApiError)) return 'Не удалось связаться с сервером. Попробуйте ещё раз.';
-  if (error.status === 404) return 'Запись больше недоступна. Обновите список.';
-  if (error.status === 409) return conflict ?? 'Изменение конфликтует с текущими данными.';
-  if (error.status === 422) return invalid ?? 'Проверьте заполнение полей.';
-  return 'Сервер не смог выполнить запрос. Попробуйте ещё раз.';
+  if (!(error instanceof ApiError)) return 'Не вдалося зв’язатися із сервером. Спробуйте ще раз.';
+  if (error.status === 404) return 'Запис більше недоступний. Оновіть список.';
+  if (error.status === 409) return conflict ?? 'Зміна суперечить поточним даним.';
+  if (error.status === 422) return invalid ?? 'Перевірте, чи правильно заповнено поля.';
+  return 'Сервер не зміг виконати запит. Спробуйте ще раз.';
 }
 
 function rememberSemester(id) {
@@ -139,26 +139,26 @@ function renderControls() {
 
 function render() {
   const { ready, student, semesters, semester } = state;
-  const profileName = student?.display_name ?? 'Профиль';
+  const profileName = student?.display_name ?? 'Профіль';
   const avatar = student ? profileName.trim().split(/\s+/).slice(0, 2).map((part) => [...part][0]).join('') : 'СТ';
   byId('profile-initials').textContent = avatar.toLocaleUpperCase('ru');
   byId('profile-name').textContent = profileName;
-  byId('profile-caption').textContent = student ? 'Настройки профиля' : 'Создать профиль';
+  byId('profile-caption').textContent = student ? 'Налаштування профілю' : 'Створити профіль';
 
   const select = byId('term-select');
   select.replaceChildren(...semesters.map(({ id, name }) => new Option(name, id)));
   if (semester) select.value = semester.id;
-  else select.append(new Option('Семестр не выбран', ''));
+  else select.append(new Option('Семестр не вибрано', ''));
 
   byId('page-intro').textContent = semester
-    ? `${semester.name} · ${semester.grading_scale}-балльная шкала`
-    : 'Оценки и учебная цель по семестрам';
+    ? `${semester.name} · ${semester.grading_scale}-бальна шкала`
+    : 'Оцінки й навчальна ціль для кожного семестру';
   byId('setup-banner').hidden = !ready || Boolean(semester);
-  byId('setup-heading').textContent = student ? 'Создайте первый семестр' : 'Создайте профиль';
+  byId('setup-heading').textContent = student ? 'Створіть перший семестр' : 'Створіть профіль';
   byId('setup-description').textContent = student
-    ? 'Выберите шкалу оценок и способ расчёта среднего.'
-    : 'Укажите имя, чтобы начать вести успеваемость.';
-  byId('setup-action').textContent = student ? 'Создать семестр' : 'Создать профиль';
+    ? 'Виберіть шкалу оцінювання й спосіб розрахунку середнього бала.'
+    : 'Вкажіть ім’я, щоб почати відстежувати успішність.';
+  byId('setup-action').textContent = student ? 'Створити семестр' : 'Створити профіль';
 
   renderControls();
   renderSummary();
@@ -171,25 +171,25 @@ function renderSummary() {
   const scaleLabel = semester ? `/ ${semester.grading_scale}` : '';
   byId('average').textContent = formatScore(statistics?.overall_average);
   byId('average-scale').textContent = scaleLabel;
-  byId('average-note').textContent = semester ? modeLabels[semester.averaging_mode] : 'Появится после первой оценки';
-  byId('summary-subjects').textContent = `Предметы · ${semester ? subjects.length : '—'}`;
-  byId('summary-grades').textContent = `Оценки · ${statistics?.grade_count ?? '—'}`;
+  byId('average-note').textContent = semester ? modeLabels[semester.averaging_mode] : 'З’явиться після першої оцінки';
+  byId('summary-subjects').textContent = `Предмети · ${semester ? subjects.length : '—'}`;
+  byId('summary-grades').textContent = `Оцінки · ${statistics?.grade_count ?? '—'}`;
 
   const target = progress?.target_average ?? null;
   const currentProgress = progress?.progress_percent ?? null;
   byId('goal-score').textContent = formatScore(target);
   byId('goal-scale').textContent = scaleLabel;
-  byId('goal-button').textContent = target === null ? 'Задать цель' : 'Изменить';
-  byId('goal-button').setAttribute('aria-label', target === null ? 'Задать цель' : 'Изменить цель');
+  byId('goal-button').textContent = target === null ? 'Встановити ціль' : 'Змінити';
+  byId('goal-button').setAttribute('aria-label', target === null ? 'Встановити ціль' : 'Змінити ціль');
   const belowTargetAfterRounding = currentProgress === 100 && progress?.goal_reached === false;
   const progressCaption = belowTargetAfterRounding ? '< 100 %' : `${formatScore(currentProgress)} %`;
   byId('progress-caption').textContent = currentProgress === null ? '—' : progressCaption;
   const progressBar = byId('goal-progress');
   progressBar.value = belowTargetAfterRounding ? 99.9 : Number(currentProgress ?? 0);
-  progressBar.setAttribute('aria-valuetext', currentProgress === null ? 'Пока нет данных' : progressCaption);
-  byId('goal-note').textContent = target === null ? 'Задайте ориентир для этого семестра'
-    : currentProgress === null ? 'Прогресс появится после первой оценки'
-      : progress.goal_reached ? 'Учебная цель достигнута' : 'Учебная цель ещё не достигнута';
+  progressBar.setAttribute('aria-valuetext', currentProgress === null ? 'Даних поки немає' : progressCaption);
+  byId('goal-note').textContent = target === null ? 'Встановіть ціль на цей семестр'
+    : currentProgress === null ? 'Поступ буде видно після першої оцінки'
+      : progress.goal_reached ? 'Навчальної цілі досягнуто' : 'Навчальної цілі ще не досягнуто';
 }
 
 function renderSubjects() {
@@ -200,8 +200,8 @@ function renderSubjects() {
   list.hidden = subjects.length === 0;
   byId('subjects-empty').hidden = subjects.length > 0;
   byId('subjects-empty-text').textContent = semester
-    ? 'Добавьте первый предмет, чтобы начать записывать оценки.'
-    : 'Создайте или выберите семестр, чтобы вести список предметов.';
+    ? 'Додайте перший предмет, щоб почати записувати оцінки.'
+    : 'Створіть або виберіть семестр, щоб вести список предметів.';
   list.replaceChildren(...subjects.map((subject) => subjectRow(subject, stats.get(subject.id))));
   if (activeToggle) list.querySelector(`[data-subject-toggle="${activeToggle}"]`)?.focus({ preventScroll: true });
 }
@@ -221,9 +221,9 @@ function subjectRow(subject, stats) {
   toggle.append(icon, name);
 
   const score = element('span', 'subject-score', formatScore(stats?.average));
-  score.title = 'Средний балл предмета';
+  score.title = 'Середній бал з предмета';
   const actions = element('div', 'subject-actions');
-  actions.append(button('icon-button subject-edit', '⋯', () => editSubject(subject), `Изменить предмет ${subject.name}`));
+  actions.append(button('icon-button subject-edit', '⋯', () => editSubject(subject), `Змінити предмет ${subject.name}`));
   row.append(toggle, score, actions);
 
   const details = element('div', 'subject-details');
@@ -239,22 +239,22 @@ function renderSubjectDetails(details, subject) {
   const error = state.gradeErrors.get(subject.id);
   if (error) {
     details.append(element('p', 'form-error', error));
-    details.append(button('button button-secondary', 'Повторить', () => loadGrades(subject.id)));
+    details.append(button('button button-secondary', 'Повторити', () => loadGrades(subject.id)));
   } else if (!grades) {
-    details.append(element('p', 'form-hint', 'Загрузка оценок…'));
+    details.append(element('p', 'form-hint', 'Завантаження оцінок…'));
   } else if (grades.length === 0) {
-    details.append(element('p', 'form-hint', 'Оценок пока нет.'));
+    details.append(element('p', 'form-hint', 'Оцінок поки немає.'));
   } else {
     const list = element('ul', 'grade-list');
     for (const grade of grades) {
       const item = element('li');
-      item.append(button('grade-pill', grade.value, () => editGrade(subject, grade), `Изменить оценку ${grade.value}`));
+      item.append(button('grade-pill', grade.value, () => editGrade(subject, grade), `Змінити оцінку ${grade.value}`));
       list.append(item);
     }
     details.append(list);
   }
   const actions = element('div', 'grade-actions');
-  actions.append(button('button button-secondary', '+ Оценка', () => editGrade(subject), `Добавить оценку · ${subject.name}`));
+  actions.append(button('button button-secondary', '+ Оцінка', () => editGrade(subject), `Додати оцінку · ${subject.name}`));
   details.append(actions);
 }
 
@@ -292,9 +292,9 @@ function renderForecast() {
   const available = Boolean(semester && target !== null && subjects.length);
   byId('forecast-form').hidden = !available;
   byId('forecast-empty').hidden = available;
-  byId('forecast-empty-text').textContent = !semester ? 'Прогноз доступен после настройки семестра.'
-    : target === null ? 'Задайте цель для стипендии, чтобы рассчитать прогноз.'
-      : 'Добавьте предметы, по которым ещё предстоят работы.';
+  byId('forecast-empty-text').textContent = !semester ? 'Прогноз доступний після налаштування семестру.'
+    : target === null ? 'Встановіть ціль для стипендії, щоб розрахувати прогноз.'
+      : 'Додайте предмети, з яких ще потрібно виконати роботи.';
 
   const fields = byId('forecast-fields');
   fields.replaceChildren(...subjects.map((subject) => {
@@ -322,7 +322,7 @@ function renderForecastResult() {
   const { forecast, forecastError, forecasting } = state;
   setNotice(byId('forecast-error'), forecastError);
   byId('forecast-plan').disabled = forecasting;
-  byId('forecast-submit').textContent = forecasting ? 'Расчёт…' : 'Рассчитать прогноз';
+  byId('forecast-submit').textContent = forecasting ? 'Розрахунок…' : 'Розрахувати прогноз';
   const result = byId('forecast-result');
   result.hidden = !forecast;
   if (!forecast) return;
@@ -330,14 +330,14 @@ function renderForecastResult() {
   result.classList.toggle('is-unreachable', !forecast.possible);
   if (forecast.possible) {
     result.replaceChildren(
-      element('span', 'forecast-result-label', 'Оценка за каждую работу'),
+      element('span', 'forecast-result-label', 'Оцінка за кожну роботу'),
       element('strong', 'forecast-result-value', forecast.minimum_uniform_grade),
-      element('p', '', `Средний по прогнозу · ${formatScore(forecast.projected_average)}`),
+      element('p', '', `Прогнозований середній бал · ${formatScore(forecast.projected_average)}`),
     );
   } else {
     result.replaceChildren(
-      element('strong', '', 'При этом плане цель недостижима'),
-      element('p', '', `Максимальный средний · ${formatScore(forecast.best_possible_average)}`),
+      element('strong', '', 'За цим планом цілі досягти неможливо'),
+      element('p', '', `Максимальний середній бал · ${formatScore(forecast.best_possible_average)}`),
     );
   }
 }
@@ -351,7 +351,7 @@ async function calculateForecast(event) {
   }));
   clearForecast();
   if (Object.keys(remaining).length === 0) {
-    state.forecastError = 'Укажите количество оставшихся работ хотя бы по одному предмету.';
+    state.forecastError = 'Вкажіть кількість робіт, які ще потрібно виконати, хоча б з одного предмета.';
     renderForecastResult();
     return;
   }
@@ -365,7 +365,7 @@ async function calculateForecast(event) {
     if (revision === state.forecastRevision) state.forecast = forecast;
   } catch (error) {
     if (revision === state.forecastRevision) {
-      state.forecastError = apiMessage(error, { invalid: 'Проверьте количество оставшихся работ по каждому предмету.' });
+      state.forecastError = apiMessage(error, { invalid: 'Перевірте кількість робіт, які ще потрібно виконати з кожного предмета.' });
     }
   } finally {
     if (revision === state.forecastRevision) {
@@ -403,8 +403,8 @@ function showEditor(operation) {
   body.replaceChildren(...fields);
   if (operation.hint) body.append(element('p', 'form-hint', operation.hint));
   byId('editor-delete').hidden = !operation.remove;
-  byId('editor-delete').textContent = operation.remove?.label ?? 'Удалить';
-  byId('editor-save').textContent = operation.saveLabel ?? 'Сохранить';
+  byId('editor-delete').textContent = operation.remove?.label ?? 'Видалити';
+  byId('editor-save').textContent = operation.saveLabel ?? 'Зберегти';
   setNotice(byId('editor-error'), '');
   editor.showModal();
   fields[0]?.querySelector('input, select')?.focus();
@@ -441,42 +441,42 @@ async function afterMutation(label, preferredSemester) {
 function editProfile() {
   const student = state.student;
   showEditor({
-    title: student ? 'Настройки профиля' : 'Создать профиль',
-    fields: [{ name: 'display_name', label: 'Имя', value: student?.display_name, maxlength: 120, autocomplete: 'name' }],
-    saveLabel: student ? 'Сохранить' : 'Создать профиль',
+    title: student ? 'Налаштування профілю' : 'Створити профіль',
+    fields: [{ name: 'display_name', label: 'Ім’я', value: student?.display_name, maxlength: 120, autocomplete: 'name' }],
+    saveLabel: student ? 'Зберегти' : 'Створити профіль',
     save: (data) => request(student ? '/students/me' : '/students', {
       method: student ? 'PATCH' : 'POST', data: { display_name: data.display_name.trim() },
     }),
-    success: student ? 'Профиль обновлён' : 'Профиль создан',
-    conflict: 'Профиль уже существует. Обновите страницу.',
+    success: student ? 'Профіль оновлено' : 'Профіль створено',
+    conflict: 'Профіль уже існує. Оновіть сторінку.',
     remove: student ? {
-      label: 'Удалить профиль', title: 'Удалить профиль?',
-      message: 'Будут удалены все семестры, предметы, оценки и цели.',
-      path: '/students/me', success: 'Профиль удалён',
+      label: 'Видалити профіль', title: 'Видалити профіль?',
+      message: 'Усі семестри, предмети, оцінки й цілі буде видалено.',
+      path: '/students/me', success: 'Профіль видалено',
     } : null,
   });
 }
 
 function editSemester(semester) {
   showEditor({
-    title: semester ? 'Настройки семестра' : 'Новый семестр',
+    title: semester ? 'Налаштування семестру' : 'Новий семестр',
     fields: [
-      { name: 'name', label: 'Название', value: semester?.name, maxlength: 120, placeholder: 'Например, Осень 2026' },
-      { name: 'grading_scale', label: 'Шкала оценок', value: semester?.grading_scale ?? 5, options: scales },
-      { name: 'averaging_mode', label: 'Метод расчёта среднего', value: semester?.averaging_mode ?? 'subject_means', options: Object.entries(modeLabels) },
+      { name: 'name', label: 'Назва', value: semester?.name, maxlength: 120, placeholder: 'Наприклад, осінь 2026' },
+      { name: 'grading_scale', label: 'Шкала оцінювання', value: semester?.grading_scale ?? 5, options: scales },
+      { name: 'averaging_mode', label: 'Спосіб розрахунку середнього бала', value: semester?.averaging_mode ?? 'subject_means', options: Object.entries(modeLabels) },
     ],
-    saveLabel: semester ? 'Сохранить' : 'Создать семестр',
+    saveLabel: semester ? 'Зберегти' : 'Створити семестр',
     save: (data) => request(semester ? `/semesters/${semester.id}` : '/semesters', {
       method: semester ? 'PATCH' : 'POST',
       data: { name: data.name.trim(), grading_scale: Number(data.grading_scale), averaging_mode: data.averaging_mode },
     }),
     preferredSemester: (result) => result.id,
-    success: semester ? 'Семестр обновлён' : 'Семестр создан',
-    conflict: 'Перед сменой шкалы удалите оценки и цель в этом семестре.',
+    success: semester ? 'Семестр оновлено' : 'Семестр створено',
+    conflict: 'Перш ніж змінити шкалу, видаліть оцінки й ціль цього семестру.',
     remove: semester ? {
-      label: 'Удалить семестр', title: 'Удалить семестр?',
-      message: 'Будут удалены все его предметы, оценки и учебная цель.',
-      path: `/semesters/${semester.id}`, success: 'Семестр удалён',
+      label: 'Видалити семестр', title: 'Видалити семестр?',
+      message: 'Усі предмети, оцінки й навчальну ціль цього семестру буде видалено.',
+      path: `/semesters/${semester.id}`, success: 'Семестр видалено',
     } : null,
   });
 }
@@ -485,18 +485,18 @@ function editSubject(subject) {
   if (!state.semester) return;
   const semesterId = state.semester.id;
   showEditor({
-    title: subject ? 'Изменить предмет' : 'Новый предмет',
-    fields: [{ name: 'name', label: 'Название', value: subject?.name, maxlength: 120, placeholder: 'Например, Математика' }],
-    saveLabel: subject ? 'Сохранить' : 'Добавить предмет',
+    title: subject ? 'Змінити предмет' : 'Новий предмет',
+    fields: [{ name: 'name', label: 'Назва', value: subject?.name, maxlength: 120, placeholder: 'Наприклад, математика' }],
+    saveLabel: subject ? 'Зберегти' : 'Додати предмет',
     save: (data) => request(subject ? `/subjects/${subject.id}` : '/subjects', {
       method: subject ? 'PATCH' : 'POST',
       data: subject ? { name: data.name.trim() } : { name: data.name.trim(), semester_id: semesterId },
     }),
-    success: subject ? 'Предмет обновлён' : 'Предмет добавлен',
+    success: subject ? 'Предмет оновлено' : 'Предмет додано',
     remove: subject ? {
-      label: 'Удалить предмет', title: 'Удалить предмет?',
-      message: 'Все оценки по этому предмету будут удалены.',
-      path: `/subjects/${subject.id}`, success: 'Предмет удалён',
+      label: 'Видалити предмет', title: 'Видалити предмет?',
+      message: 'Усі оцінки з цього предмета буде видалено.',
+      path: `/subjects/${subject.id}`, success: 'Предмет видалено',
     } : null,
   });
 }
@@ -505,20 +505,20 @@ function editGrade(subject, grade) {
   const max = state.semester.grading_scale;
   const min = max === 100 ? 0 : 1;
   showEditor({
-    title: grade ? 'Изменить оценку' : 'Новая оценка',
+    title: grade ? 'Змінити оцінку' : 'Нова оцінка',
     fields: [{ name: 'value', label: subject.name, type: 'number', value: grade?.value, min, max, step: 1, inputmode: 'numeric' }],
-    hint: `Допустимая оценка от ${min} до ${max}.`,
-    saveLabel: grade ? 'Сохранить' : 'Добавить оценку',
+    hint: `Допустима оцінка від ${min} до ${max}.`,
+    saveLabel: grade ? 'Зберегти' : 'Додати оцінку',
     save: (data) => request(grade ? `/grades/${grade.id}` : '/grades', {
       method: grade ? 'PATCH' : 'POST',
       data: grade ? { value: Number(data.value) } : { value: Number(data.value), subject_id: subject.id },
     }),
-    success: grade ? 'Оценка обновлена' : 'Оценка добавлена',
-    invalid: `Введите целое число от ${min} до ${max}.`,
+    success: grade ? 'Оцінку оновлено' : 'Оцінку додано',
+    invalid: `Введіть ціле число від ${min} до ${max}.`,
     remove: grade ? {
-      label: 'Удалить оценку', title: 'Удалить оценку?',
-      message: 'Средний балл обновится после удаления.',
-      path: `/grades/${grade.id}`, success: 'Оценка удалена',
+      label: 'Видалити оцінку', title: 'Видалити оцінку?',
+      message: 'Середній бал оновиться після видалення.',
+      path: `/grades/${grade.id}`, success: 'Оцінку видалено',
     } : null,
   });
 }
@@ -530,16 +530,16 @@ function editGoal() {
   const path = `/semesters/${semester.id}/scholarship-settings`;
   const min = semester.grading_scale === 100 ? 0.01 : 1;
   showEditor({
-    title: goal === null ? 'Задать цель' : 'Изменить цель',
-    fields: [{ name: 'target_average', label: 'Целевой средний балл', type: 'number', value: goal, min, max: semester.grading_scale, step: 0.01, inputmode: 'decimal' }],
-    hint: 'Учебный ориентир. Условия назначения стипендии устанавливает учебное заведение.',
+    title: goal === null ? 'Встановити ціль' : 'Змінити ціль',
+    fields: [{ name: 'target_average', label: 'Цільовий середній бал', type: 'number', value: goal, min, max: semester.grading_scale, step: 0.01, inputmode: 'decimal' }],
+    hint: 'Навчальна ціль. Умови призначення стипендії встановлює заклад освіти.',
     save: (data) => request(path, { method: 'PUT', data: { target_average: data.target_average } }),
-    success: 'Цель сохранена',
-    invalid: `Введите значение от ${formatScore(min)} до ${formatScore(semester.grading_scale)} с точностью до двух знаков.`,
+    success: 'Ціль збережено',
+    invalid: `Введіть значення від ${formatScore(min)} до ${formatScore(semester.grading_scale)} з точністю до двох знаків після коми.`,
     remove: goal !== null ? {
-      label: 'Удалить цель', title: 'Удалить цель?',
-      message: 'Прогноз и прогресс появятся снова после добавления новой цели.',
-      path, success: 'Цель удалена',
+      label: 'Видалити ціль', title: 'Видалити ціль?',
+      message: 'Прогноз і поступ знову з’являться після додавання нової цілі.',
+      path, success: 'Ціль видалено',
     } : null,
   });
 }
@@ -603,6 +603,11 @@ function selectNavigation() {
     if (active) link.setAttribute('aria-current', 'location');
     else link.removeAttribute('aria-current');
   }
+}
+window.addEventListener('hashchange', selectNavigation);
+selectNavigation();
+void reload();
+
 }
 window.addEventListener('hashchange', selectNavigation);
 selectNavigation();
