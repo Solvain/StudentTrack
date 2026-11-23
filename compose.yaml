@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:17-bookworm
+    environment: &postgres_environment
+      POSTGRES_DB: ${POSTGRES_DB:-studenttrack}
+      POSTGRES_USER: ${POSTGRES_USER:-studenttrack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-studenttrack_local}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -h 127.0.0.1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build: .
+    environment:
+      <<: *postgres_environment
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${STUDENTTRACK_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health', timeout=4).close()"
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+
+volumes:
+  postgres_data:
