@@ -1,105 +1,105 @@
 <!doctype html>
-<html lang="ru">
+<html lang="uk">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#18392e">
-    <title>StudentTrack · Успеваемость</title>
+    <title>StudentTrack · Успішність</title>
     <link rel="stylesheet" href="/static/styles.css">
     <script type="module" src="/static/app.mjs"></script>
   </head>
   <body>
-    <a class="skip-link" href="#dashboard">К успеваемости</a>
+    <a class="skip-link" href="#dashboard">До успішності</a>
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Боковая панель">
+      <aside class="sidebar" aria-label="Бічна панель">
         <a class="brand" href="#dashboard">
           <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
           <span>StudentTrack</span>
         </a>
-        <nav class="sidebar-nav" aria-label="Разделы">
-          <a class="nav-link is-current" href="#dashboard" aria-current="location"><span class="nav-glyph nav-overview" aria-hidden="true"></span>Обзор</a>
-          <a class="nav-link" href="#subjects"><span class="nav-glyph nav-subjects" aria-hidden="true"></span>Предметы</a>
+        <nav class="sidebar-nav" aria-label="Розділи">
+          <a class="nav-link is-current" href="#dashboard" aria-current="location"><span class="nav-glyph nav-overview" aria-hidden="true"></span>Огляд</a>
+          <a class="nav-link" href="#subjects"><span class="nav-glyph nav-subjects" aria-hidden="true"></span>Предмети</a>
           <a class="nav-link" href="#forecast"><span class="nav-glyph nav-forecast" aria-hidden="true"></span>Прогноз</a>
         </nav>
         <button class="sidebar-profile" id="profile-button" type="button" disabled>
           <span class="avatar" id="profile-initials" aria-hidden="true">СТ</span>
-          <span class="profile-label"><strong id="profile-name">Профиль</strong><small id="profile-caption">Учебный кабинет</small></span>
+          <span class="profile-label"><strong id="profile-name">Профіль</strong><small id="profile-caption">Навчальний кабінет</small></span>
           <span class="profile-accent" aria-hidden="true"></span>
         </button>
       </aside>
 
       <main class="main" id="dashboard" tabindex="-1">
         <div class="topbar">
-          <p class="eyebrow">Учебный кабинет</p>
+          <p class="eyebrow">Навчальний кабінет</p>
           <div class="topbar-actions">
-            <label class="visually-hidden" for="term-select">Активный семестр</label>
-            <select id="term-select" class="term-select" disabled><option>Семестр не выбран</option></select>
-            <button class="icon-button settings-button" id="term-settings" type="button" title="Настройки семестра" aria-label="Настройки семестра" disabled><span aria-hidden="true">⚙</span></button>
+            <label class="visually-hidden" for="term-select">Активний семестр</label>
+            <select id="term-select" class="term-select" disabled><option>Семестр не вибрано</option></select>
+            <button class="icon-button settings-button" id="term-settings" type="button" title="Налаштування семестру" aria-label="Налаштування семестру" disabled><span aria-hidden="true">⚙</span></button>
             <button class="button button-secondary new-term-button" id="new-term" type="button" disabled><span aria-hidden="true">+</span> Семестр</button>
           </div>
         </div>
 
         <header class="page-header">
-          <h1 class="page-heading">Успеваемость</h1>
-          <p class="page-intro" id="page-intro">Управляйте предметами и учебной целью по семестрам.</p>
+          <h1 class="page-heading">Успішність</h1>
+          <p class="page-intro" id="page-intro">Керуйте предметами й навчальною ціллю для кожного семестру.</p>
         </header>
 
         <div class="notice error-notice" id="load-error" role="alert" hidden>
           <span id="load-error-text"></span>
-          <button class="button button-quiet" id="retry" type="button">Повторить</button>
+          <button class="button button-quiet" id="retry" type="button">Повторити</button>
         </div>
 
-        <section class="setup-banner" id="setup-banner" aria-label="Начало работы" hidden>
+        <section class="setup-banner" id="setup-banner" aria-label="Початок роботи" hidden>
           <div>
-            <h2 id="setup-heading">Создайте профиль</h2>
-            <p id="setup-description">Укажите имя, чтобы начать вести успеваемость.</p>
+            <h2 id="setup-heading">Створіть профіль</h2>
+            <p id="setup-description">Вкажіть ім’я, щоб почати відстежувати успішність.</p>
           </div>
-          <button type="button" class="button button-primary" id="setup-action">Создать профиль</button>
+          <button type="button" class="button button-primary" id="setup-action">Створити профіль</button>
         </section>
 
-        <section class="summary-grid" aria-label="Основные показатели">
+        <section class="summary-grid" aria-label="Основні показники">
           <article class="summary-card average-card" aria-labelledby="average-label">
-            <h2 class="card-heading" id="average-label">Общий средний</h2>
+            <h2 class="card-heading" id="average-label">Загальний середній бал</h2>
             <div class="metric"><span class="metric-number" id="average">—</span><span class="metric-unit" id="average-scale"></span></div>
-            <p class="metric-details" id="average-note">Появится после первой оценки</p>
-            <div class="summary-foot"><span id="summary-subjects">Предметы · —</span><span id="summary-grades">Оценки · —</span></div>
+            <p class="metric-details" id="average-note">З’явиться після першої оцінки</p>
+            <div class="summary-foot"><span id="summary-subjects">Предмети · —</span><span id="summary-grades">Оцінки · —</span></div>
           </article>
           <article class="summary-card goal-card" aria-labelledby="goal-label">
             <div class="goal-fields">
-              <h2 class="card-heading" id="goal-label">Цель для стипендии</h2>
-              <button class="button button-quiet" id="goal-button" type="button" disabled>Задать цель</button>
+              <h2 class="card-heading" id="goal-label">Ціль для стипендії</h2>
+              <button class="button button-quiet" id="goal-button" type="button" disabled>Встановити ціль</button>
             </div>
             <div class="metric"><span class="metric-number" id="goal-score">—</span><span class="metric-unit" id="goal-scale"></span></div>
-            <div class="progress-line"><label for="goal-progress">Прогресс к цели</label><strong id="progress-caption">—</strong></div>
+            <div class="progress-line"><label for="goal-progress">Поступ до цілі</label><strong id="progress-caption">—</strong></div>
             <progress id="goal-progress" value="0" max="100" aria-describedby="goal-note"></progress>
-            <p class="metric-details" id="goal-note">Задайте ориентир для этого семестра</p>
+            <p class="metric-details" id="goal-note">Встановіть ціль на цей семестр</p>
           </article>
         </section>
 
         <div class="panel-grid">
           <section class="panel subjects-panel" id="subjects" aria-labelledby="subjects-title">
             <header class="panel-header">
-              <div><h2 id="subjects-title">Предметы</h2><p id="subjects-description">Оценки и средний по каждому предмету</p></div>
+              <div><h2 id="subjects-title">Предмети</h2><p id="subjects-description">Оцінки й середній бал з кожного предмета</p></div>
               <button class="button button-primary" id="new-subject" type="button" disabled><span aria-hidden="true">+</span> Предмет</button>
             </header>
             <div class="panel-body">
-              <div class="empty-state" id="subjects-empty"><p id="subjects-empty-text">Выберите семестр, чтобы вести список предметов.</p></div>
+              <div class="empty-state" id="subjects-empty"><p id="subjects-empty-text">Виберіть семестр, щоб вести список предметів.</p></div>
               <ul class="subject-list" id="subject-list" hidden></ul>
             </div>
           </section>
 
           <section class="panel forecast-panel" id="forecast" aria-labelledby="forecast-title">
             <header class="panel-header">
-              <div><h2 id="forecast-title">Прогноз</h2><p>Какие оценки помогут достичь цели</p></div>
+              <div><h2 id="forecast-title">Прогноз</h2><p>Які оцінки допоможуть досягти цілі</p></div>
             </header>
             <div class="panel-body">
-              <div class="empty-state" id="forecast-empty"><p id="forecast-empty-text">Прогноз доступен после настройки семестра.</p></div>
+              <div class="empty-state" id="forecast-empty"><p id="forecast-empty-text">Прогноз доступний після налаштування семестру.</p></div>
               <form id="forecast-form" hidden>
                 <fieldset class="forecast-plan" id="forecast-plan">
-                  <legend>Оставшиеся работы</legend>
+                  <legend>Роботи, які ще потрібно виконати</legend>
                   <div class="forecast-fields" id="forecast-fields"></div>
                   <p class="form-error" id="forecast-error" role="alert" hidden></p>
-                  <button class="button button-primary" id="forecast-submit" type="submit">Рассчитать прогноз</button>
+                  <button class="button button-primary" id="forecast-submit" type="submit">Розрахувати прогноз</button>
                 </fieldset>
               </form>
               <div class="forecast-result" id="forecast-result" role="status" aria-live="polite" hidden></div>
@@ -113,14 +113,14 @@
       <form id="editor-form">
         <header class="dialog-header">
           <h2 id="editor-title"></h2>
-          <button class="icon-button" type="button" data-close-editor aria-label="Закрыть">×</button>
+          <button class="icon-button" type="button" data-close-editor aria-label="Закрити">×</button>
         </header>
         <div class="dialog-body" id="editor-body"></div>
         <p class="form-error dialog-error" id="editor-error" role="alert" hidden></p>
         <footer class="dialog-actions">
-          <button class="button button-danger" id="editor-delete" type="button" hidden>Удалить</button>
-          <button class="button button-secondary" type="button" data-close-editor>Отмена</button>
-          <button class="button button-primary" id="editor-save" type="submit">Сохранить</button>
+          <button class="button button-danger" id="editor-delete" type="button" hidden>Видалити</button>
+          <button class="button button-secondary" type="button" data-close-editor>Скасувати</button>
+          <button class="button button-primary" id="editor-save" type="submit">Зберегти</button>
         </footer>
       </form>
     </dialog>
@@ -131,8 +131,8 @@
         <p class="dialog-body" id="confirm-body"></p>
         <p class="form-error dialog-error" id="confirm-error" role="alert" hidden></p>
         <footer class="dialog-actions">
-          <button class="button button-secondary" type="button" id="confirm-cancel" autofocus>Отмена</button>
-          <button class="button button-danger filled-danger" type="submit" id="confirm-delete">Удалить</button>
+          <button class="button button-secondary" type="button" id="confirm-cancel" autofocus>Скасувати</button>
+          <button class="button button-danger filled-danger" type="submit" id="confirm-delete">Видалити</button>
         </footer>
       </form>
     </dialog>
