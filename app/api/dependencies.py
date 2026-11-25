@@ -1,5 +1,9 @@
 from typing import Annotated
 
+from jwt.exceptions import InvalidTokenError
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.services.security import decode_student_id
+
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -11,10 +15,23 @@ from app.models import Grade, Semester, Student, Subject
 DatabaseSession = Annotated[Session, Depends(get_session)]
 
 
-def get_current_student(session: DatabaseSession) -> Student:
-    student = resources.get_local_student(session)
-    if student is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Student profile not found")
+bearer_scheme = HTTPBearer(auto_error=False)
+
+
+def get_current_student(
+    session: DatabaseSession,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+) -> Student:
+    error = HTTPException(401, "Invalid or expired token", headers={"WWW-Authenticate": "Bearer"})
+    if credentials is None:
+        raise error
+    try:
+        student_id = decode_student_id(credentials.credentials)
+    except (InvalidTokenError, ValueError, TypeError) as exc:
+        raise error from exc
+    student = session.get(Student, student_id)
+    if student is None or student.password_hash is None:
+        raise error
     return student
 
 

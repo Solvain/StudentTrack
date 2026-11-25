@@ -32,8 +32,8 @@ def set_target(client, semester_id, target):
 
 @pytest.fixture
 def profile_client(client):
-    response = client.post("/api/students", json={"display_name": "Student"})
-    assert response.status_code == 201, response.text
+    from auth_helpers import register_and_login
+    register_and_login(client), response.text
     return client
 
 

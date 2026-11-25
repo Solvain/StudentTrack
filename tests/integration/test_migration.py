@@ -163,15 +163,16 @@ def test_target_range_and_semester_scale_are_enforced(migrated_engine, scale, in
         assert error.value.orig.diag.constraint_name == "fk_scholarship_settings_semester_scale"
 
 
-def test_postgres_cascades_deletions_and_enforces_the_single_profile(migrated_engine):
+def test_postgres_cascades_deletions_and_enforces_unique_username(migrated_engine):
     with migrated_engine.begin() as connection:
         student_id, semester_id, subject_id = insert_subject(connection, 5)
         insert_grade(connection, subject_id, semester_id, 5, 4)
         insert_target(connection, semester_id, 5, 5)
 
+        connection.execute(text("UPDATE students SET username='jamie', password_hash='test-hash' WHERE id=:id"), {"id": student_id})
         with pytest.raises(IntegrityError) as error, connection.begin_nested():
-            connection.execute(text("INSERT INTO students (display_name) VALUES ('Morgan')"))
-        assert error.value.orig.diag.constraint_name == "uq_students_local_slot"
+            connection.execute(text("INSERT INTO students (display_name, username, password_hash) VALUES ('Morgan', 'jamie', 'test-hash')"))
+        assert error.value.orig.diag.constraint_name == "uq_students_username"
 
         connection.execute(text("DELETE FROM subjects WHERE id = :id"), {"id": subject_id})
         assert connection.execute(text("SELECT count(*) FROM grades")).scalar_one() == 0

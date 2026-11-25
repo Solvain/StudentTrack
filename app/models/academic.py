@@ -24,13 +24,14 @@ class Base(DeclarativeBase):
 class Student(Base):
     __tablename__ = "students"
     __table_args__ = (
-        CheckConstraint("local_slot = 1", name="ck_students_local_slot"),
-        UniqueConstraint("local_slot", name="uq_students_local_slot"),
+        UniqueConstraint("username", name="uq_students_username"),
+        CheckConstraint("(username IS NULL) = (password_hash IS NULL)", name="ck_students_credentials_pair"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     display_name: Mapped[str] = mapped_column(String(120))
-    local_slot: Mapped[int] = mapped_column(SmallInteger, server_default=text("1"))
+    username: Mapped[str | None] = mapped_column(String(50))
+    password_hash: Mapped[str | None] = mapped_column(String(255))
 
     semesters: Mapped[list[Semester]] = relationship(
         back_populates="student", cascade="all, delete-orphan", passive_deletes=True

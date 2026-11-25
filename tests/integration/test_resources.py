@@ -1,10 +1,10 @@
 import pytest
 from sqlalchemy import text
+from auth_helpers import register_and_login
 
 
 def create_semester(client, *, scale=5):
-    response = client.post("/api/students", json={"display_name": "Мария"})
-    assert response.status_code == 201
+    register_and_login(client, name="Мария")
     response = client.post("/api/semesters", json={"name": "Осень", "grading_scale": scale})
     assert response.status_code == 201
     return response.json()["id"]
@@ -17,13 +17,13 @@ def create_subject(client, semester_id, name="Математика"):
 
 
 def test_local_profile_and_owned_semester_lifecycle(client):
-    assert client.get("/api/students/me").status_code == 404
+    assert client.get("/api/students/me").status_code == 401
 
     semester_id = create_semester(client, scale=12)
     profile = client.get("/api/students/me")
     assert profile.status_code == 200
     assert profile.json()["display_name"] == "Мария"
-    assert client.post("/api/students", json={"display_name": "Другой"}).status_code == 409
+    assert client.post("/api/auth/register", json={"display_name": "Другой", "username": "student", "password": "test-password-123"}).status_code == 409
 
     profile = client.patch("/api/students/me", json={"display_name": "  Мария С.  "})
     assert profile.status_code == 200
@@ -40,7 +40,7 @@ def test_local_profile_and_owned_semester_lifecycle(client):
     assert client.get(f"/api/semesters/{semester_id}").json()["name"] == "Весна"
 
     assert client.delete("/api/students/me").status_code == 204
-    assert client.post("/api/students", json={"display_name": "Новый профиль"}).status_code == 201
+    register_and_login(client, username="second", name="Новый профиль")
     assert client.get("/api/semesters").json() == []
     assert client.get(f"/api/semesters/{semester_id}").status_code == 404
 

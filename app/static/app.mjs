@@ -1,4 +1,4 @@
-import { ApiError, formatScore, request } from './api.mjs';
+import { ApiError, clearToken, formatScore, request } from './api.mjs';
 
 const byId = (id) => document.getElementById(id);
 const selectionKey = 'studenttrack.semester';
@@ -91,7 +91,7 @@ async function reload(preferredSemester = state.semester?.id ?? rememberedSemest
   byId('load-error').hidden = true;
   renderControls();
   try {
-    const student = await request('/students/me', { missing: true });
+    const student = await request('/students/me');
     const semesters = student ? await request('/semesters') : [];
     const semester = semesters.find(({ id }) => String(id) === String(preferredSemester)) ?? semesters[0] ?? null;
     const [subjects, statistics, progress] = semester ? await Promise.all([
@@ -440,6 +440,7 @@ async function afterMutation(label, preferredSemester) {
 
 function editProfile() {
   const student = state.student;
+  if (!student) { window.location.replace('/login'); return; }
   showEditor({
     title: student ? 'Налаштування профілю' : 'Створити профіль',
     fields: [{ name: 'display_name', label: 'Ім’я', value: student?.display_name, maxlength: 120, autocomplete: 'name' }],
@@ -567,6 +568,7 @@ byId('confirm-form').addEventListener('submit', async (event) => {
   setDialogBusy(confirmDialog, true);
   try {
     await request(operation.path, { method: 'DELETE' });
+    if (operation.path === '/students/me') { clearToken(); window.location.replace('/login'); return; }
     await afterMutation(operation.success);
   } catch (error) {
     setNotice(byId('confirm-error'), apiMessage(error));
@@ -586,6 +588,7 @@ for (const closer of document.querySelectorAll('[data-close-editor]')) {
 byId('editor-delete').addEventListener('click', () => showConfirmation(editOperation.remove));
 byId('confirm-cancel').addEventListener('click', () => confirmDialog.close());
 byId('profile-button').addEventListener('click', editProfile);
+byId('logout-button').addEventListener('click', () => { clearToken(); window.location.replace('/login'); });
 byId('setup-action').addEventListener('click', () => state.student ? editSemester() : editProfile());
 byId('new-term').addEventListener('click', () => editSemester());
 byId('term-settings').addEventListener('click', () => editSemester(state.semester));
@@ -608,7 +611,3 @@ window.addEventListener('hashchange', selectNavigation);
 selectNavigation();
 void reload();
 
-}
-window.addEventListener('hashchange', selectNavigation);
-selectNavigation();
-void reload();

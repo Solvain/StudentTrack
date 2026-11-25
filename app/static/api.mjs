@@ -16,8 +16,17 @@ export class ApiError extends Error {
   }
 }
 
+export function setToken(token) {
+  sessionStorage.setItem('studenttrack.token', token);
+}
+export function clearToken() {
+  sessionStorage.removeItem('studenttrack.token');
+}
+
 export async function request(path, { method = 'GET', data, missing = false, fetcher = globalThis.fetch } = {}) {
   const init = { method, headers: { Accept: 'application/json' } };
+  const token = globalThis.sessionStorage?.getItem('studenttrack.token');
+  if (token && !path.startsWith('/auth/')) init.headers.Authorization = `Bearer ${token}`;
   if (data !== undefined) {
     init.headers['Content-Type'] = 'application/json';
     init.body = JSON.stringify(data);
@@ -27,6 +36,10 @@ export async function request(path, { method = 'GET', data, missing = false, fet
   if (response.status === 204 || (missing && response.status === 404)) return null;
   const payload = await response.json().catch(() => null);
 
+  if (response.status === 401 && !path.startsWith('/auth/') && typeof window !== 'undefined') {
+    clearToken();
+    window.location.replace('/login');
+  }
   if (!response.ok) throw new ApiError(response.status, payload?.detail);
   return payload;
 }
