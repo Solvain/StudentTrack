@@ -92,7 +92,7 @@ async function reload(preferredSemester = state.semester?.id ?? rememberedSemest
   renderControls();
   try {
     const student = await request('/students/me');
-    const semesters = student ? await request('/semesters') : [];
+    const semesters = await request('/semesters');
     const semester = semesters.find(({ id }) => String(id) === String(preferredSemester)) ?? semesters[0] ?? null;
     const [subjects, statistics, progress] = semester ? await Promise.all([
       request(`/subjects?semester_id=${semester.id}`),
@@ -143,7 +143,6 @@ function render() {
   const avatar = student ? profileName.trim().split(/\s+/).slice(0, 2).map((part) => [...part][0]).join('') : 'СТ';
   byId('profile-initials').textContent = avatar.toLocaleUpperCase('ru');
   byId('profile-name').textContent = profileName;
-  byId('profile-caption').textContent = student ? 'Налаштування профілю' : 'Створити профіль';
 
   const select = byId('term-select');
   select.replaceChildren(...semesters.map(({ id, name }) => new Option(name, id)));
@@ -154,11 +153,6 @@ function render() {
     ? `${semester.name} · ${semester.grading_scale}-бальна шкала`
     : 'Оцінки й навчальна ціль для кожного семестру';
   byId('setup-banner').hidden = !ready || Boolean(semester);
-  byId('setup-heading').textContent = student ? 'Створіть перший семестр' : 'Створіть профіль';
-  byId('setup-description').textContent = student
-    ? 'Виберіть шкалу оцінювання й спосіб розрахунку середнього бала.'
-    : 'Вкажіть ім’я, щоб почати відстежувати успішність.';
-  byId('setup-action').textContent = student ? 'Створити семестр' : 'Створити профіль';
 
   renderControls();
   renderSummary();
@@ -440,21 +434,20 @@ async function afterMutation(label, preferredSemester) {
 
 function editProfile() {
   const student = state.student;
-  if (!student) { window.location.replace('/login'); return; }
+  if (!student) return;
   showEditor({
-    title: student ? 'Налаштування профілю' : 'Створити профіль',
-    fields: [{ name: 'display_name', label: 'Ім’я', value: student?.display_name, maxlength: 120, autocomplete: 'name' }],
-    saveLabel: student ? 'Зберегти' : 'Створити профіль',
-    save: (data) => request(student ? '/students/me' : '/students', {
-      method: student ? 'PATCH' : 'POST', data: { display_name: data.display_name.trim() },
+    title: 'Налаштування профілю',
+    fields: [{ name: 'display_name', label: 'Ім’я', value: student.display_name, maxlength: 120, autocomplete: 'name' }],
+    saveLabel: 'Зберегти',
+    save: (data) => request('/students/me', {
+      method: 'PATCH', data: { display_name: data.display_name.trim() },
     }),
-    success: student ? 'Профіль оновлено' : 'Профіль створено',
-    conflict: 'Профіль уже існує. Оновіть сторінку.',
-    remove: student ? {
+    success: 'Профіль оновлено',
+    remove: {
       label: 'Видалити профіль', title: 'Видалити профіль?',
       message: 'Усі семестри, предмети, оцінки й цілі буде видалено.',
       path: '/students/me', success: 'Профіль видалено',
-    } : null,
+    },
   });
 }
 
@@ -589,7 +582,7 @@ byId('editor-delete').addEventListener('click', () => showConfirmation(editOpera
 byId('confirm-cancel').addEventListener('click', () => confirmDialog.close());
 byId('profile-button').addEventListener('click', editProfile);
 byId('logout-button').addEventListener('click', () => { clearToken(); window.location.replace('/login'); });
-byId('setup-action').addEventListener('click', () => state.student ? editSemester() : editProfile());
+byId('setup-action').addEventListener('click', () => editSemester());
 byId('new-term').addEventListener('click', () => editSemester());
 byId('term-settings').addEventListener('click', () => editSemester(state.semester));
 byId('term-select').addEventListener('change', (event) => reload(event.target.value));

@@ -59,7 +59,7 @@ def session(migrated_engine):
 
 @pytest.fixture
 def client(migrated_engine, monkeypatch):
-    monkeypatch.setenv('JWT_SECRET_KEY', 'test-key-' + 'x' * 40)
+    monkeypatch.setenv("JWT_SECRET_KEY", "studenttrack-integration-test-key")
     from app.db import get_session
     from app.main import app
 

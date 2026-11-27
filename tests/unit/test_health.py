@@ -10,7 +10,8 @@ from app.main import app
 
 
 @pytest.fixture
-def engine():
+def engine(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET_KEY", "studenttrack-unit-test-key-value")
     fake_engine = MagicMock(spec=Engine)
     app.dependency_overrides[get_engine] = lambda: fake_engine
     try:
@@ -38,3 +39,10 @@ def test_health_returns_unavailable_when_postgres_cannot_connect(engine):
 
     assert response.status_code == 503
     assert response.json() == {"detail": "Database unavailable"}
+
+
+def test_startup_rejects_an_invalid_jwt_key(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET_KEY", "too-short")
+    with pytest.raises(RuntimeError, match="JWT_SECRET_KEY must contain at least 32 bytes"):
+        with TestClient(app):
+            pytest.fail("Application started with an invalid JWT key")

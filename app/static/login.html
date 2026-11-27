@@ -5,11 +5,11 @@
 <script type="module" src="/static/login.mjs"></script></head>
 <body><main style="max-width:480px;margin:48px auto;padding:24px">
 <h1>StudentTrack</h1><p>Ваш особистий навчальний кабінет</p>
-<form id="login-form"><h2>Вхід</h2>
+<form id="login-form" method="post"><h2>Вхід</h2>
 <p><label>Логін <input name="username" autocomplete="username" required minlength="3" maxlength="50"></label></p>
 <p><label>Пароль <input name="password" type="password" autocomplete="current-password" required maxlength="128"></label></p>
 <button class="button button-primary" type="submit">Увійти</button></form>
-<form id="register-form"><h2>Реєстрація</h2>
+<form id="register-form" method="post"><h2>Реєстрація</h2>
 <p><label>Ім’я <input name="display_name" autocomplete="name" required maxlength="120"></label></p>
 <p><label>Логін <input name="username" autocomplete="username" required minlength="3" maxlength="50"></label></p>
 <p><label>Пароль <input name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128"></label></p>

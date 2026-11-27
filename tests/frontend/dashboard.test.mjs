@@ -10,7 +10,7 @@ test('the dashboard exposes its three sections, forms and bundled assets', async
   for (const id of ['dashboard', 'subjects', 'forecast', 'forecast-form', 'editor', 'confirm-dialog']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
-  assert.match(html, /<html lang="ru">/);
+  assert.match(html, /<html lang="uk">/);
   assert.match(html, /href="\/static\/styles\.css"/);
   assert.match(html, /src="\/static\/app\.mjs"/);
 });
@@ -43,4 +43,11 @@ test('API errors preserve status and detail and only a requested 404 returns nul
     assert.equal(error.detail, 'not found');
     return true;
   });
+});
+
+test('login and registration forms default to POST', async () => {
+  const html = await readFile(new URL('../../app/static/login.html', import.meta.url), 'utf8');
+  for (const id of ['login-form', 'register-form']) {
+    assert.match(html, new RegExp(`<form id="${id}" method="post">`));
+  }
 });
