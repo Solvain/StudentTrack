@@ -39,7 +39,6 @@ PathId = Annotated[int, Path(gt=0, le=MAX_RESOURCE_ID)]
 QueryId = Annotated[int, Query(gt=0, le=MAX_RESOURCE_ID)]
 
 _CONSTRAINT_ERRORS = {
-    "uq_students_local_slot": (status.HTTP_409_CONFLICT, "Local student profile already exists"),
     "fk_semesters_student": (status.HTTP_404_NOT_FOUND, "Student profile not found"),
     "fk_subjects_semester": (status.HTTP_404_NOT_FOUND, "Semester not found"),
     "fk_grades_subject_semester": (status.HTTP_404_NOT_FOUND, "Subject not found"),
@@ -88,14 +87,6 @@ def _require_scholarship_settings(session: Session, semester_id: int) -> Scholar
     if settings is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Scholarship target not set")
     return settings
-
-
-@router.post("/students", response_model=StudentRead, status_code=status.HTTP_201_CREATED)
-def create_student(payload: StudentWrite, session: DatabaseSession) -> Student:
-    student = Student(display_name=payload.display_name, local_slot=1)
-    session.add(student)
-    _commit(session)
-    return student
 
 
 @router.get("/students/me", response_model=StudentRead)

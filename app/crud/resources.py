@@ -4,11 +4,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Grade, ScholarshipSettings, Semester, Student, Subject
-
-
-def get_local_student(session: Session) -> Student | None:
-    return session.scalar(select(Student).where(Student.local_slot == 1))
+from app.models import Grade, ScholarshipSettings, Semester, Subject
 
 
 def list_semesters(session: Session, student_id: int) -> Sequence[Semester]:

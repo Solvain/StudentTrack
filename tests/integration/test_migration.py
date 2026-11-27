@@ -163,15 +163,16 @@ def test_target_range_and_semester_scale_are_enforced(migrated_engine, scale, in
         assert error.value.orig.diag.constraint_name == "fk_scholarship_settings_semester_scale"
 
 
-def test_postgres_cascades_deletions_and_enforces_the_single_profile(migrated_engine):
+def test_postgres_cascades_deletions_and_enforces_unique_username(migrated_engine):
     with migrated_engine.begin() as connection:
         student_id, semester_id, subject_id = insert_subject(connection, 5)
         insert_grade(connection, subject_id, semester_id, 5, 4)
         insert_target(connection, semester_id, 5, 5)
 
+        connection.execute(text("UPDATE students SET username='jamie', password_hash='test-hash' WHERE id=:id"), {"id": student_id})
         with pytest.raises(IntegrityError) as error, connection.begin_nested():
-            connection.execute(text("INSERT INTO students (display_name) VALUES ('Morgan')"))
-        assert error.value.orig.diag.constraint_name == "uq_students_local_slot"
+            connection.execute(text("INSERT INTO students (display_name, username, password_hash) VALUES ('Morgan', 'jamie', 'test-hash')"))
+        assert error.value.orig.diag.constraint_name == "uq_students_username"
 
         connection.execute(text("DELETE FROM subjects WHERE id = :id"), {"id": subject_id})
         assert connection.execute(text("SELECT count(*) FROM grades")).scalar_one() == 0
@@ -187,3 +188,42 @@ def test_postgres_cascades_deletions_and_enforces_the_single_profile(migrated_en
 
         for table in TABLES:
             assert connection.execute(text(f"SELECT count(*) FROM {table}")).scalar_one() == 0
+
+
+def test_legacy_academic_data_is_available_only_after_claim(migrated_engine, client, monkeypatch):
+    from app.services import claim_profile
+    from auth_helpers import register_and_login
+
+    config = Config(str(PROJECT_ROOT / "alembic.ini"))
+    with migrated_engine.begin() as connection:
+        config.attributes["connection"] = connection
+        command.downgrade(config, "0001_initial_schema")
+        student_id, semester_id, subject_id = insert_subject(connection, 5)
+        insert_grade(connection, subject_id, semester_id, 5, 4)
+        insert_target(connection, semester_id, 5, "4.50")
+        command.upgrade(config, "head")
+
+    register_and_login(client, "new-student")
+    assert client.get("/api/semesters").json() == []
+    assert client.get(f"/api/semesters/{semester_id}").status_code == 404
+
+    monkeypatch.setattr(claim_profile, "get_engine", lambda: migrated_engine)
+    monkeypatch.setattr(claim_profile, "getpass", lambda _: "legacy-test-password")
+    monkeypatch.setattr("sys.argv", ["claim_profile", str(student_id), "legacy"])
+    claim_profile.main()
+
+    response = client.post(
+        "/api/auth/login", json={"username": "legacy", "password": "legacy-test-password"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.headers["Cache-Control"] == "no-store"
+    headers = {"Authorization": "Bearer " + response.json()["access_token"]}
+    semester = client.get(f"/api/semesters/{semester_id}", headers=headers)
+    assert semester.status_code == 200, semester.text
+    assert semester.json()["student_id"] == student_id
+
+    stats = client.get("/api/statistics", params={"semester_id": semester_id}, headers=headers)
+    assert stats.json()["overall_average"] == 4
+    progress = client.get("/api/scholarship/progress", params={"semester_id": semester_id}, headers=headers)
+    assert progress.json()["target_average"] == 4.5
+    assert client.get(f"/api/semesters/{semester_id}").status_code == 404

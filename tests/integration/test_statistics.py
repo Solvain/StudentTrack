@@ -1,5 +1,7 @@
 import pytest
 
+from auth_helpers import register_and_login
+
 
 def create_semester(client, mode="subject_means", scale=5):
     response = client.post(
@@ -32,8 +34,7 @@ def set_target(client, semester_id, target):
 
 @pytest.fixture
 def profile_client(client):
-    response = client.post("/api/students", json={"display_name": "Student"})
-    assert response.status_code == 201, response.text
+    register_and_login(client)
     return client
 
 
